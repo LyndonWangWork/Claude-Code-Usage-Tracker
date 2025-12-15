@@ -101,6 +101,8 @@ The application reads usage data from Claude Code's local storage:
 - **Default location**: `~/.claude/projects/`
 - **Custom location**: Set via `CLAUDE_CONFIG_DIR` environment variable
 
+> **Note**: The data is parsed from local session files, not from the official Anthropic API. The statistics are for reference only and may differ from official billing data.
+
 ## Release
 
 Releases are automated via GitHub Actions. To create a new release:
