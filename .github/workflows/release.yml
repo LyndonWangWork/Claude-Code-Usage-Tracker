@@ -70,3 +70,37 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
+      # Upload portable/green version
+      - name: Prepare portable version (Windows)
+        if: matrix.platform == 'windows-latest'
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          $exePath = "src-tauri/target/release/claude-code-usage-tracker.exe"
+          $newName = "Claude-Code-Usage-Tracker_${version}_windows_portable.exe"
+          if (Test-Path $exePath) {
+            Copy-Item $exePath $newName
+            echo "PORTABLE_FILE=$newName" >> $env:GITHUB_ENV
+          }
+        shell: pwsh
+
+      - name: Prepare portable version (Linux)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          version="${{ github.ref_name }}"
+          version="${version#v}"
+          appimage=$(find src-tauri/target/release/bundle/appimage -name "*.AppImage" 2>/dev/null | head -1)
+          if [ -n "$appimage" ]; then
+            new_name="Claude-Code-Usage-Tracker_${version}_linux_portable.AppImage"
+            cp "$appimage" "$new_name"
+            echo "PORTABLE_FILE=$new_name" >> $GITHUB_ENV
+          fi
+
+      - name: Upload portable version
+        if: env.PORTABLE_FILE != ''
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          files: ${{ env.PORTABLE_FILE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

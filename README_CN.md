@@ -39,12 +39,23 @@
 
 从 [Releases](https://github.com/LyndonWangWork/Claude-Code-Usage-Tracker/releases) 页面下载适合您平台的最新版本。
 
+#### 安装版
+
 | 平台                  | 格式                |
 | --------------------- | ------------------- |
 | Windows               | `.msi`, `.exe`      |
 | macOS (Intel)         | `.dmg`              |
 | macOS (Apple Silicon) | `.dmg`              |
 | Linux                 | `.deb`, `.AppImage` |
+
+#### 绿色版（免安装）
+
+无需安装，下载即可运行：
+
+| 平台    | 格式                          |
+| ------- | ----------------------------- |
+| Windows | `*_windows_portable.exe`      |
+| Linux   | `*_linux_portable.AppImage`   |
 
 ### 从源码构建
 

@@ -39,12 +39,23 @@ A desktop application for tracking Claude Code usage statistics, built with Taur
 
 Download the latest release for your platform from the [Releases](https://github.com/LyndonWangWork/Claude-Code-Usage-Tracker/releases) page.
 
+#### Installer Version
+
 | Platform              | Format              |
 | --------------------- | ------------------- |
 | Windows               | `.msi`, `.exe`      |
 | macOS (Intel)         | `.dmg`              |
 | macOS (Apple Silicon) | `.dmg`              |
 | Linux                 | `.deb`, `.AppImage` |
+
+#### Portable Version (Green Version)
+
+No installation required - just download and run:
+
+| Platform | Format                        |
+| -------- | ----------------------------- |
+| Windows  | `*_windows_portable.exe`      |
+| Linux    | `*_linux_portable.AppImage`   |
 
 ### Build from Source
 
