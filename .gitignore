@@ -1,0 +1,27 @@
+# Node.js
+node_modules/
+web/node_modules/
+
+# Build outputs
+web/dist/
+src-tauri/target/
+
+# Tauri
+src-tauri/gen/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude
+.claude/
+CLAUDE.md
+AGENTS.md
+openspec/
