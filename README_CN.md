@@ -4,6 +4,8 @@
 
 [English Documentation](./README.md)
 
+> **注意**: 数据来源于本地会话文件解析，而非 Anthropic 官方 API。统计数据仅供参考，可能与官方账单数据存在差异。
+
 ## 功能特性
 
 - **实时用量追踪**: 监控所有 Claude Code 项目的 token 使用量、费用和消息数量
@@ -100,8 +102,6 @@ npm run tauri build
 应用程序从 Claude Code 的本地存储读取使用数据：
 - **默认位置**: `~/.claude/projects/`
 - **自定义位置**: 通过 `CLAUDE_CONFIG_DIR` 环境变量设置
-
-> **注意**: 数据来源于本地会话文件解析，而非 Anthropic 官方 API。统计数据仅供参考，可能与官方账单数据存在差异。
 
 ## 发布
 

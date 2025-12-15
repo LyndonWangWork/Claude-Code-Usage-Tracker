@@ -4,6 +4,8 @@ A desktop application for tracking Claude Code usage statistics, built with Taur
 
 [中文文档](./README_CN.md)
 
+> **Note**: The data is parsed from local session files, not from the official Anthropic API. The statistics are for reference only and may differ from official billing data.
+
 ## Features
 
 - **Real-time Usage Tracking**: Monitor token usage, costs, and message counts across all your Claude Code projects
@@ -100,8 +102,6 @@ npm run tauri build
 The application reads usage data from Claude Code's local storage:
 - **Default location**: `~/.claude/projects/`
 - **Custom location**: Set via `CLAUDE_CONFIG_DIR` environment variable
-
-> **Note**: The data is parsed from local session files, not from the official Anthropic API. The statistics are for reference only and may differ from official billing data.
 
 ## Release
 
