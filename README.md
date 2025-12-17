@@ -15,6 +15,7 @@ A desktop application for tracking Claude Code usage statistics, built with Taur
 - **Model Distribution**: Visualize usage across different Claude models with interactive pie charts
 - **Usage Trends**: View historical usage patterns with 30-day trend charts
 - **Compact Mode**: Minimal floating window for always-on-top monitoring without disrupting your workflow
+- **Mini Mode**: Ultra-compact single-line display that automatically activates after 10 seconds of inactivity in compact mode, showing only today's cost and tokens
 - **Session Window Tracking**: Monitor the 5-hour rolling session window with time-to-reset countdown
 
 ## Screenshots
@@ -34,6 +35,9 @@ A desktop application for tracking Claude Code usage statistics, built with Taur
 
 #### Compact Projects View
 ![Compact Projects](docs/compact-projects.jpg)
+
+### Mini Mode
+![Mini Mode](docs/mini.jpg)
 
 ## Installation
 
@@ -95,7 +99,8 @@ npm run tauri build
 2. **View Overall Statistics** - See total costs, tokens, messages, and session metrics
 3. **Browse Projects** - Switch to the Projects tab to see per-project breakdowns
 4. **Toggle Compact Mode** - Click the compact button to switch to a compact floating window
-5. **Pin to Top** - Use the pin button to keep the window always on top
+5. **Mini Mode** - In compact mode, move your mouse away from the window for 10 seconds to automatically enter mini mode (single-line display). Double-click to restore to compact mode
+6. **Pin to Top** - Use the pin button to keep the window always on top
 
 ## Data Source
 
