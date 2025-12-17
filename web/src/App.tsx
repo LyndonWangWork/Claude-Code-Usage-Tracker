@@ -34,51 +34,49 @@ export default function App() {
     }
   }, []);
 
-  // Toggle mini mode
+  // Switch to specific view mode
+  const switchToMode = useCallback(async (mode: ViewMode) => {
+    clearMiniTimer();
+    try {
+      const { getCurrentWindow } = await import("@tauri-apps/api/window");
+      const { LogicalSize } = await import("@tauri-apps/api/dpi");
+      const appWindow = getCurrentWindow();
+
+      switch (mode) {
+        case "normal":
+          await appWindow.setSize(new LogicalSize(NORMAL_SIZE.width, NORMAL_SIZE.height));
+          await appWindow.setResizable(true);
+          await appWindow.center();
+          break;
+        case "compact":
+          await appWindow.setResizable(false);
+          await appWindow.setSize(new LogicalSize(COMPACT_SIZE.width, COMPACT_SIZE.height));
+          break;
+        case "mini":
+          await appWindow.setResizable(false);
+          await appWindow.setSize(new LogicalSize(MINI_SIZE.width, MINI_SIZE.height));
+          break;
+      }
+    } catch (e) {
+      // Not in Tauri environment, ignore
+    }
+    setViewMode(mode);
+  }, [clearMiniTimer]);
+
+  // Cycle through view modes: normal -> compact -> mini -> normal
+  const cycleViewMode = useCallback(async () => {
+    const nextMode: ViewMode = viewMode === "normal" ? "compact" : viewMode === "compact" ? "mini" : "normal";
+    await switchToMode(nextMode);
+  }, [viewMode, switchToMode]);
+
+  // Legacy toggle functions for backward compatibility
   const toggleMini = useCallback(async (mini: boolean) => {
-    clearMiniTimer();
-    try {
-      const { getCurrentWindow } = await import("@tauri-apps/api/window");
-      const { LogicalSize } = await import("@tauri-apps/api/dpi");
-      const appWindow = getCurrentWindow();
+    await switchToMode(mini ? "mini" : "compact");
+  }, [switchToMode]);
 
-      if (mini) {
-        // Switch to mini mode
-        await appWindow.setResizable(false);
-        await appWindow.setSize(new LogicalSize(MINI_SIZE.width, MINI_SIZE.height));
-      } else {
-        // Return to compact mode
-        await appWindow.setSize(new LogicalSize(COMPACT_SIZE.width, COMPACT_SIZE.height));
-      }
-    } catch (e) {
-      // Not in Tauri environment, ignore
-    }
-    setViewMode(mini ? "mini" : "compact");
-  }, [clearMiniTimer]);
-
-  // Toggle compact mode with window resize
   const toggleCompact = useCallback(async (compact: boolean) => {
-    clearMiniTimer();
-    try {
-      const { getCurrentWindow } = await import("@tauri-apps/api/window");
-      const { LogicalSize } = await import("@tauri-apps/api/dpi");
-      const appWindow = getCurrentWindow();
-
-      if (compact) {
-        // Switch to compact mode
-        await appWindow.setResizable(false);
-        await appWindow.setSize(new LogicalSize(COMPACT_SIZE.width, COMPACT_SIZE.height));
-      } else {
-        // Switch to normal mode
-        await appWindow.setSize(new LogicalSize(NORMAL_SIZE.width, NORMAL_SIZE.height));
-        await appWindow.setResizable(true);
-        await appWindow.center();
-      }
-    } catch (e) {
-      // Not in Tauri environment, ignore
-    }
-    setViewMode(compact ? "compact" : "normal");
-  }, [clearMiniTimer]);
+    await switchToMode(compact ? "compact" : "normal");
+  }, [switchToMode]);
 
   // Start mini mode timer (only in compact mode)
   const startMiniTimer = useCallback(() => {
@@ -117,6 +115,7 @@ export default function App() {
         error={error}
         onRestore={() => toggleMini(false)}
         onMouseEnter={resetMiniTimer}
+        onCycleMode={cycleViewMode}
       />
     );
   }
@@ -132,7 +131,7 @@ export default function App() {
         {/* Compact Title Bar with View Toggle */}
         <TitleBar
           onRefresh={fullRefetch}
-          onToggleCompact={() => toggleCompact(false)}
+          onToggleCompact={cycleViewMode}
           isRefreshing={loading}
           isCompact={true}
           activeView={activeView}
@@ -157,7 +156,7 @@ export default function App() {
       {/* Title Bar */}
       <TitleBar
         onRefresh={fullRefetch}
-        onToggleCompact={() => toggleCompact(true)}
+        onToggleCompact={cycleViewMode}
         isRefreshing={loading}
         isCompact={false}
         dataSource={data?.dataSource}

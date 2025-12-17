@@ -190,13 +190,13 @@ export function TitleBar({
             <Github className="w-3 h-3 text-gray-400" />
           </button>
 
-          {/* Expand */}
+          {/* Mini Mode */}
           <button
             onClick={onToggleCompact}
             className="p-1 hover:bg-gray-700 rounded transition-colors"
-            title="Expand"
+            title="Mini mode"
           >
-            <Maximize2 className="w-3 h-3 text-gray-400" />
+            <Minimize2 className="w-3 h-3 text-gray-400" />
           </button>
 
           {/* Always on Top */}

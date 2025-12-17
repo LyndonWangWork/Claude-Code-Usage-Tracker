@@ -1,4 +1,4 @@
-import { Calendar, Hash, Loader2 } from "lucide-react";
+import { Calendar, Hash, Loader2, Maximize2 } from "lucide-react";
 import { UsageData, formatTokens, formatCost } from "../hooks/useUsage";
 import React from "react";
 import { AnimatedNumber } from "./AnimatedNumber";
@@ -9,9 +9,10 @@ interface MiniViewProps {
   error: string | null;
   onRestore: () => void;
   onMouseEnter: () => void;
+  onCycleMode: () => void;
 }
 
-export function MiniView({ data, loading, error, onRestore, onMouseEnter }: MiniViewProps) {
+export function MiniView({ data, loading, error, onRestore, onMouseEnter, onCycleMode }: MiniViewProps) {
   // Base container for all states (ensures consistent size and draggability)
   const baseContainerProps = {
     "data-tauri-drag-region": true,
@@ -20,6 +21,17 @@ export function MiniView({ data, loading, error, onRestore, onMouseEnter }: Mini
     onMouseEnter: onMouseEnter,
   };
 
+  // Mode switch button component
+  const ModeSwitchButton = () => (
+    <button
+      onClick={onCycleMode}
+      className="p-1 hover:bg-gray-700 rounded transition-colors flex-shrink-0"
+      title="Normal mode"
+    >
+      <Maximize2 className="w-3.5 h-3.5 text-gray-400" />
+    </button>
+  );
+
   // Loading state
   if (loading) {
     return (
@@ -27,6 +39,7 @@ export function MiniView({ data, loading, error, onRestore, onMouseEnter }: Mini
         <Loader2 className="w-4 h-4 text-blue-400 animate-spin" />
         <span className="text-xs text-gray-400 ml-2">Loading...</span>
         <div className="flex-1" data-tauri-drag-region />
+        <ModeSwitchButton />
       </div>
     );
   }
@@ -37,6 +50,7 @@ export function MiniView({ data, loading, error, onRestore, onMouseEnter }: Mini
       <div {...baseContainerProps}>
         <span className="text-xs text-red-400">Error loading data</span>
         <div className="flex-1" data-tauri-drag-region />
+        <ModeSwitchButton />
       </div>
     );
   }
@@ -49,7 +63,7 @@ export function MiniView({ data, loading, error, onRestore, onMouseEnter }: Mini
       {/* Today Cost */}
       <div className="flex items-center gap-1.5" data-tauri-drag-region>
         <Calendar className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
-        <span className="text-xs text-gray-400">Today $</span>
+        <span className="text-xs text-gray-400">Cost</span>
         <span className="text-xs text-cyan-300 font-medium">
           <AnimatedNumber value={todayCost} formatter={formatCost} duration={300} />
         </span>
@@ -61,7 +75,7 @@ export function MiniView({ data, loading, error, onRestore, onMouseEnter }: Mini
       {/* Today Tokens */}
       <div className="flex items-center gap-1.5" data-tauri-drag-region>
         <Hash className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
-        <span className="text-xs text-gray-400">Today Tk</span>
+        <span className="text-xs text-gray-400">Token</span>
         <span className="text-xs text-purple-300 font-medium">
           <AnimatedNumber value={todayTokens} formatter={formatTokens} duration={300} />
         </span>
@@ -69,6 +83,9 @@ export function MiniView({ data, loading, error, onRestore, onMouseEnter }: Mini
 
       {/* Drag area - takes remaining space */}
       <div className="flex-1 min-w-2" data-tauri-drag-region />
+
+      {/* Mode switch button */}
+      <ModeSwitchButton />
     </div>
   );
 }
