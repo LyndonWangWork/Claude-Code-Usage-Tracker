@@ -28,6 +28,8 @@ pub struct CacheManager {
     last_full_refresh: Option<Instant>,
     /// Last directory scan time (for detecting new projects)
     last_dir_scan: Option<Instant>,
+    /// Cached usage data from last calculation (for quick access when no changes)
+    cached_usage_data: Option<UsageData>,
 }
 
 /// Result of checking file changes
@@ -53,6 +55,13 @@ impl CacheManager {
         self.cached_projects.clear();
         self.last_full_refresh = None;
         self.last_dir_scan = None;
+        self.cached_usage_data = None;
+    }
+
+    /// Get cached usage data without any file system operations
+    /// Returns None if cache is empty or no data has been calculated yet
+    pub fn get_cached_data(&self) -> Option<&UsageData> {
+        self.cached_usage_data.as_ref()
     }
 
     /// Check if cache is empty (first load)
@@ -371,7 +380,12 @@ impl CacheManager {
         self.mark_full_refresh();
 
         // Calculate statistics
-        calculate_usage_data(all_data)
+        let data = calculate_usage_data(all_data)?;
+
+        // Cache the result for quick access
+        self.cached_usage_data = Some(data.clone());
+
+        Ok(data)
     }
 
     /// Perform incremental load (only read changed files)
@@ -449,7 +463,12 @@ impl CacheManager {
             ));
         }
 
-        calculate_usage_data(all_data)
+        let data = calculate_usage_data(all_data)?;
+
+        // Cache the result for quick access
+        self.cached_usage_data = Some(data.clone());
+
+        Ok(data)
     }
 }
 

@@ -54,20 +54,32 @@ pub fn start_background_refresh(app: AppHandle, refresh_interval_secs: u64) {
                     // Telemetry provides: overall stats (tokens, cost, burn_rate, today_stats, daily_usage, model_distribution)
                     // JSONL provides: projects, session_start_time, time_to_reset_minutes
 
-                    // Read telemetry data
-                    let telemetry_data = match TelemetryStorage::new(None) {
-                        Ok(storage) => {
+                    // Read telemetry data using shared storage (reuse SQLite connection)
+                    let telemetry_data = {
+                        let storage_opt = state.telemetry_storage.lock().ok()
+                            .and_then(|guard| guard.clone());
+
+                        if let Some(storage) = storage_opt {
                             let reader = TelemetryReader::new(storage);
                             reader.get_usage_data(None, None).ok()
-                        }
-                        Err(e) => {
-                            log::warn!("Failed to create telemetry storage: {}", e);
-                            None
+                        } else {
+                            // Fallback: create new storage if not initialized
+                            log::debug!("Telemetry storage not in AppState, creating temporary one");
+                            TelemetryStorage::new(None).ok().and_then(|storage| {
+                                let reader = TelemetryReader::new(storage);
+                                reader.get_usage_data(None, None).ok()
+                            })
                         }
                     };
 
-                    // Read JSONL data (always, for project info)
-                    let jsonl_data = cache.incremental_load(None, &pricing).ok();
+                    // Read JSONL data only if files have changed (CPU optimization)
+                    let jsonl_data = if cache.has_changes(None) {
+                        // Files changed, do incremental load
+                        cache.incremental_load(None, &pricing).ok()
+                    } else {
+                        // No changes, use cached data (zero file system operations)
+                        cache.get_cached_data().cloned()
+                    };
 
                     // Merge data: JSONL projects + telemetry overall stats
                     let merged_data = merge_telemetry_jsonl(telemetry_data, jsonl_data);

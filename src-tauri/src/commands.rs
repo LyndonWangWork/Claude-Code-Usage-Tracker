@@ -12,16 +12,27 @@ use crate::AppState;
 
 /// Get complete usage statistics
 #[command]
-pub fn get_usage_stats(data_path: Option<String>) -> Result<UsageData, String> {
+pub fn get_usage_stats(state: State<AppState>, data_path: Option<String>) -> Result<UsageData, String> {
     let data_source = get_active_data_source();
 
     let mut usage_data = match data_source {
         DataSourceType::Telemetry => {
             // Hybrid mode: read both telemetry and JSONL, merge them
+            // Use shared telemetry storage (reuse SQLite connection to reduce CPU)
             let telemetry_data = {
-                let storage = TelemetryStorage::new(None).map_err(|e| e.to_string())?;
-                let reader = TelemetryReader::new(storage);
-                reader.get_usage_data(None, None).ok()
+                let storage_opt = state.telemetry_storage.lock().ok()
+                    .and_then(|guard| guard.clone());
+
+                if let Some(storage) = storage_opt {
+                    let reader = TelemetryReader::new(storage);
+                    reader.get_usage_data(None, None).ok()
+                } else {
+                    // Fallback: create new storage if not initialized
+                    TelemetryStorage::new(None).ok().and_then(|storage| {
+                        let reader = TelemetryReader::new(storage);
+                        reader.get_usage_data(None, None).ok()
+                    })
+                }
             };
 
             let jsonl_data = {
@@ -150,10 +161,21 @@ pub fn get_usage_stats_incremental(
     let mut usage_data = match data_source {
         DataSourceType::Telemetry => {
             // Hybrid mode: read both telemetry and JSONL, merge them
+            // Use shared telemetry storage (reuse SQLite connection to reduce CPU)
             let telemetry_data = {
-                let storage = TelemetryStorage::new(None).map_err(|e| e.to_string())?;
-                let reader = TelemetryReader::new(storage);
-                reader.get_usage_data(None, None).ok()
+                let storage_opt = state.telemetry_storage.lock().ok()
+                    .and_then(|guard| guard.clone());
+
+                if let Some(storage) = storage_opt {
+                    let reader = TelemetryReader::new(storage);
+                    reader.get_usage_data(None, None).ok()
+                } else {
+                    // Fallback: create new storage if not initialized
+                    TelemetryStorage::new(None).ok().and_then(|storage| {
+                        let reader = TelemetryReader::new(storage);
+                        reader.get_usage_data(None, None).ok()
+                    })
+                }
             };
 
             let jsonl_data = {

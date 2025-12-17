@@ -4,17 +4,20 @@ mod commands;
 pub mod usage;
 
 use std::sync::Mutex;
+use tauri::Manager;
 
 use commands::{
     check_data_directory, get_config, get_daily_usage, get_overall_stats, get_project_details,
     get_projects, get_usage_stats, get_usage_stats_incremental, set_config, get_data_source_status,
 };
-use usage::{start_background_refresh, CacheManager, TelemetryCollector, get_active_data_source, DataSourceType};
+use usage::{start_background_refresh, CacheManager, TelemetryCollector, TelemetryStorage, get_active_data_source, DataSourceType};
 
 /// Application state containing the cache manager and telemetry collector
 pub struct AppState {
     pub cache: Mutex<CacheManager>,
     pub telemetry_collector: Mutex<Option<TelemetryCollector>>,
+    /// Shared telemetry storage for connection reuse (reduces CPU usage)
+    pub telemetry_storage: Mutex<Option<TelemetryStorage>>,
 }
 
 /// Default refresh interval in seconds
@@ -27,6 +30,7 @@ pub fn run() {
         .manage(AppState {
             cache: Mutex::new(CacheManager::new()),
             telemetry_collector: Mutex::new(None),
+            telemetry_storage: Mutex::new(None),
         })
         .setup(|app| {
             if cfg!(debug_assertions) {
@@ -43,6 +47,22 @@ pub fn run() {
 
             if data_source == DataSourceType::Telemetry {
                 log::info!("Telemetry enabled, starting local collector...");
+
+                // Initialize shared telemetry storage (reuse connection to reduce CPU)
+                match TelemetryStorage::new(None) {
+                    Ok(storage) => {
+                        if let Some(state) = app.try_state::<AppState>() {
+                            if let Ok(mut storage_lock) = state.telemetry_storage.lock() {
+                                *storage_lock = Some(storage);
+                                log::info!("Initialized shared telemetry storage");
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        log::error!("Failed to create telemetry storage: {}", e);
+                    }
+                }
+
                 match TelemetryCollector::new(None, None) {
                     Ok(mut collector) => {
                         let port = collector.port();
