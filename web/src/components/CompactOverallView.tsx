@@ -1,4 +1,4 @@
-import { DollarSign, Zap, Loader2, TrendingUp, Calendar } from "lucide-react";
+import { DollarSign, Zap, Loader2, TrendingUp, Calendar, Hash } from "lucide-react";
 import { UsageData, formatTokens, formatCost } from "../hooks/useUsage";
 import React from "react";
 import { AnimatedNumber } from "./AnimatedNumber";
@@ -47,10 +47,21 @@ export function CompactOverallView({ data, loading, error }: CompactOverallViewP
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
           <Calendar className="w-3 h-3 text-cyan-400" />
-          <span className="text-[10px] text-gray-400">Today</span>
+          <span className="text-[10px] text-gray-400">Today $</span>
         </div>
         <span className="text-[11px] text-cyan-300 font-medium">
           <AnimatedNumber value={overallStats.todayStats?.costUsd || 0} formatter={formatCost} duration={300} />
+        </span>
+      </div>
+
+      {/* Today's Tokens */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1">
+          <Hash className="w-3 h-3 text-purple-400" />
+          <span className="text-[10px] text-gray-400">Today Tk</span>
+        </div>
+        <span className="text-[11px] text-purple-300 font-medium">
+          <AnimatedNumber value={overallStats.todayStats?.totalTokens || 0} formatter={formatTokens} duration={300} />
         </span>
       </div>
 
@@ -84,11 +95,6 @@ export function CompactOverallView({ data, loading, error }: CompactOverallViewP
           />
           <span className="text-[8px] text-gray-500">/h</span>
         </span>
-      </div>
-
-      {/* Summary */}
-      <div className="text-[8px] text-gray-500 text-center pt-0.5 border-t border-gray-700/50">
-        {overallStats.projectCount} projects • {overallStats.totalMessages} msgs
       </div>
     </div>
   );
