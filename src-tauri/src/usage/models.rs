@@ -146,6 +146,24 @@ pub struct UsageData {
     pub projects: Vec<ProjectStats>,
     pub daily_usage: Vec<DailyUsage>,
     pub overall_stats: OverallStats,
+    /// Data source type (jsonl or telemetry)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub data_source: Option<DataSourceInfo>,
+}
+
+/// Data source information for UI display
+#[derive(Debug, Clone, Serialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct DataSourceInfo {
+    /// Source type: "jsonl" or "telemetry"
+    pub source_type: String,
+    /// Display name for UI
+    pub display_name: String,
+    /// Icon for UI
+    pub icon: String,
+    /// Collector port (only for telemetry)
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub collector_port: Option<u16>,
 }
 
 /// Incremental update payload for push notifications

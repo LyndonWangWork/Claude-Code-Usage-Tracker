@@ -99,9 +99,64 @@ npm run tauri build
 
 ## 数据来源
 
-应用程序从 Claude Code 的本地存储读取使用数据：
+应用程序支持两种数据来源：
+
+### 本地文件（默认）
+
+从 Claude Code 的本地 JSONL 会话文件读取使用数据：
 - **默认位置**: `~/.claude/projects/`
 - **自定义位置**: 通过 `CLAUDE_CONFIG_DIR` 环境变量设置
+
+### OpenTelemetry 遥测（可选）
+
+当启用 Claude Code 遥测时，应用可以通过 OpenTelemetry 接收实时使用数据：
+
+1. **配置 Claude Code 导出遥测数据**：
+
+```bash
+# 启用遥测
+export CLAUDE_CODE_ENABLE_TELEMETRY=1
+
+# 配置 OTLP 导出器发送到本地收集器
+export OTEL_METRICS_EXPORTER=otlp
+export OTEL_LOGS_EXPORTER=otlp
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/json
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+```
+
+2. **启动应用** - 当检测到 `CLAUDE_CODE_ENABLE_TELEMETRY=1` 时，应用会自动：
+   - 在端口 4318 启动本地 OTLP HTTP 收集器
+   - 接收遥测数据并存储到 SQLite
+   - 切换到遥测数据源
+
+3. **数据来源指示器** - UI 会显示当前数据来源：
+   - 📁 本地文件 - 从 JSONL 文件读取
+   - 📡 遥测数据 - 接收实时遥测数据
+
+**注意**：两种数据源互斥。启用遥测时，应用仅从遥测数据读取。要切换回本地文件，请取消设置 `CLAUDE_CODE_ENABLE_TELEMETRY` 环境变量并重启应用
+
+### 数据源对比
+
+两种数据源提供不同级别的详细信息：
+
+| 功能 | 本地文件 (JSONL) | 遥测数据 |
+|------|------------------|----------|
+| 总 Token 数 | ✅ | ✅ |
+| 总费用 | ✅ | ✅ |
+| 今日费用 | ✅ | ✅ |
+| 每日使用趋势 | ✅ | ✅ |
+| 模型分布 | ✅ | ✅ |
+| 消耗速率 (tokens/分钟, 费用/小时) | ✅ | ✅ |
+| 会话数 | ✅ | ✅ |
+| 消息数 | ✅ | ✅ (估算) |
+| **项目级统计** | ✅ | ❌ |
+| 会话开始时间 | ✅ | ❌ |
+| 重置倒计时 | ✅ | ❌ |
+| 缓存 Token (读取/创建) | ✅ | ✅ |
+
+**主要差异**：
+- **本地文件**：提供完整数据，包括每个项目的详细统计和会话时间信息
+- **遥测数据**：实时数据收集，但缺少项目级别的细分（Claude Code 遥测不包含项目信息）
 
 ## 发布
 

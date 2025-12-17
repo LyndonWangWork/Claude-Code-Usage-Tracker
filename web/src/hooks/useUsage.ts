@@ -73,10 +73,19 @@ export interface OverallStats {
   todayStats: TodayStats;
 }
 
+/** Data source information */
+export interface DataSourceInfo {
+  sourceType: 'jsonl' | 'telemetry';
+  displayName: string;
+  icon: string;
+  collectorPort?: number;
+}
+
 export interface UsageData {
   projects: ProjectStats[];
   dailyUsage: DailyUsage[];
   overallStats: OverallStats;
+  dataSource?: DataSourceInfo;
 }
 
 /** Incremental update payload from backend push notifications */
@@ -454,6 +463,7 @@ export function usePushBasedUsageStats(
       projects: mergedProjects,
       dailyUsage: delta.dailyUsage ?? currentData.dailyUsage,
       overallStats: delta.overallStats ?? currentData.overallStats,
+      dataSource: currentData.dataSource, // 保留数据源信息
     };
   }, []);
 
@@ -560,10 +570,10 @@ export function formatTokens(count: number): string {
 }
 
 /**
- * Format cost for display
+ * Format cost for display (with $ prefix)
  */
 export function formatCost(cost: number): string {
-  return `${cost.toFixed(2)}`;
+  return `$${cost.toFixed(2)}`;
 }
 
 /**

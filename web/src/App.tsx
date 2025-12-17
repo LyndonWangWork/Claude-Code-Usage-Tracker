@@ -56,6 +56,7 @@ export default function App() {
           isCompact={true}
           activeView={activeView}
           onToggleView={() => setActiveView(activeView === "overall" ? "projects" : "overall")}
+          dataSource={data?.dataSource}
         />
 
         {/* Compact Content - Full height without tab bar */}
@@ -78,6 +79,7 @@ export default function App() {
         onToggleCompact={() => toggleCompact(true)}
         isRefreshing={loading}
         isCompact={false}
+        dataSource={data?.dataSource}
       />
 
       {/* Main Content */}

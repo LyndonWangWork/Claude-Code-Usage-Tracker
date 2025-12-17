@@ -99,9 +99,64 @@ npm run tauri build
 
 ## Data Source
 
-The application reads usage data from Claude Code's local storage:
+The application supports two data sources:
+
+### Local Files (Default)
+
+Reads usage data from Claude Code's local JSONL session files:
 - **Default location**: `~/.claude/projects/`
 - **Custom location**: Set via `CLAUDE_CONFIG_DIR` environment variable
+
+### OpenTelemetry Telemetry (Optional)
+
+When Claude Code telemetry is enabled, the app can receive real-time usage data via OpenTelemetry:
+
+1. **Configure Claude Code to export telemetry**:
+
+```bash
+# Enable telemetry
+export CLAUDE_CODE_ENABLE_TELEMETRY=1
+
+# Configure OTLP exporter to send to local collector
+export OTEL_METRICS_EXPORTER=otlp
+export OTEL_LOGS_EXPORTER=otlp
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/json
+export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+```
+
+2. **Launch the application** - When `CLAUDE_CODE_ENABLE_TELEMETRY=1` is detected, the app automatically:
+   - Starts a local OTLP HTTP collector on port 4318
+   - Receives and stores telemetry data in SQLite
+   - Switches to telemetry data source
+
+3. **Data source indicator** - The UI displays the current data source:
+   - 📁 Local Files - Reading from JSONL files
+   - 📡 Telemetry - Receiving real-time telemetry data
+
+**Note**: The two data sources are mutually exclusive. When telemetry is enabled, the app only reads from telemetry data. To switch back to local files, unset the `CLAUDE_CODE_ENABLE_TELEMETRY` environment variable and restart the app
+
+### Data Source Comparison
+
+The two data sources provide different levels of detail:
+
+| Feature | Local Files (JSONL) | Telemetry |
+|---------|---------------------|-----------|
+| Total Tokens | ✅ | ✅ |
+| Total Cost | ✅ | ✅ |
+| Today's Cost | ✅ | ✅ |
+| Daily Usage Trends | ✅ | ✅ |
+| Model Distribution | ✅ | ✅ |
+| Burn Rate (tokens/min, cost/hour) | ✅ | ✅ |
+| Session Count | ✅ | ✅ |
+| Message Count | ✅ | ✅ (estimated) |
+| **Project-level Statistics** | ✅ | ❌ |
+| Session Start Time | ✅ | ❌ |
+| Time to Reset | ✅ | ❌ |
+| Cache Tokens (read/creation) | ✅ | ✅ |
+
+**Key Differences**:
+- **Local Files**: Provides complete data including per-project breakdowns and session timing information
+- **Telemetry**: Real-time data collection but lacks project-level granularity (Claude Code telemetry doesn't include project information)
 
 ## Release
 

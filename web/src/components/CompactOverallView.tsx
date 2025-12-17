@@ -39,7 +39,7 @@ export function CompactOverallView({ data, loading, error }: CompactOverallViewP
           <span className="text-[10px] text-gray-400">Total</span>
         </div>
         <span className="text-[11px] text-green-300 font-medium">
-          $<AnimatedNumber value={overallStats.totalCostUsd} formatter={formatCost} duration={300} />
+          <AnimatedNumber value={overallStats.totalCostUsd} formatter={formatCost} duration={300} />
         </span>
       </div>
 
@@ -50,7 +50,7 @@ export function CompactOverallView({ data, loading, error }: CompactOverallViewP
           <span className="text-[10px] text-gray-400">Today</span>
         </div>
         <span className="text-[11px] text-cyan-300 font-medium">
-          $<AnimatedNumber value={overallStats.todayStats?.costUsd || 0} formatter={formatCost} duration={300} />
+          <AnimatedNumber value={overallStats.todayStats?.costUsd || 0} formatter={formatCost} duration={300} />
         </span>
       </div>
 
@@ -77,7 +77,7 @@ export function CompactOverallView({ data, loading, error }: CompactOverallViewP
           <span className="text-[10px] text-gray-400">Cost Rate</span>
         </div>
         <span className="text-[11px] text-orange-300 font-medium">
-          $<AnimatedNumber
+          <AnimatedNumber
             value={burnRate?.costPerHour || 0}
             formatter={formatCost}
             duration={300}

@@ -7,11 +7,30 @@ import {
   AlertCircle,
   Loader2,
   RefreshCw,
-  Clock,
+  // Clock, // Hidden temporarily - telemetry doesn't support time to reset
   Flame,
   PieChart as PieChartIcon,
   Calendar,
 } from "lucide-react";
+
+// OpenTelemetry icon for telemetry data indicator
+const TelemetryBadge = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 128 128"
+    className="w-4 h-4"
+    title="Data from telemetry"
+  >
+    <path
+      fill="#f5a800"
+      d="M67.648 69.797c-5.246 5.25-5.246 13.758 0 19.008c5.25 5.246 13.758 5.246 19.004 0c5.25-5.25 5.25-13.758 0-19.008c-5.246-5.246-13.754-5.246-19.004 0m14.207 14.219a6.65 6.65 0 0 1-9.41 0a6.65 6.65 0 0 1 0-9.407a6.65 6.65 0 0 1 9.41 0c2.598 2.586 2.598 6.809 0 9.407M86.43 3.672l-8.235 8.234a4.17 4.17 0 0 0 0 5.875l32.149 32.149a4.17 4.17 0 0 0 5.875 0l8.234-8.235c1.61-1.61 1.61-4.261 0-5.87L92.29 3.671a4.16 4.16 0 0 0-5.86 0ZM28.738 108.895a3.763 3.763 0 0 0 0-5.31l-4.183-4.187a3.77 3.77 0 0 0-5.313 0l-8.644 8.649l-.016.012l-2.371-2.375c-1.313-1.313-3.45-1.313-4.75 0c-1.313 1.312-1.313 3.449 0 4.75l14.246 14.242a3.353 3.353 0 0 0 4.746 0c1.3-1.313 1.313-3.45 0-4.746l-2.375-2.375l.016-.012Zm0 0"
+    />
+    <path
+      fill="#425cc7"
+      d="M72.297 27.313L54.004 45.605c-1.625 1.625-1.625 4.301 0 5.926L65.3 62.824c7.984-5.746 19.18-5.035 26.363 2.153l9.148-9.149c1.622-1.625 1.622-4.297 0-5.922L78.22 27.313a4.185 4.185 0 0 0-5.922 0ZM60.55 67.585l-6.672-6.672c-1.563-1.562-4.125-1.562-5.684 0l-23.53 23.54a4.036 4.036 0 0 0 0 5.687l13.331 13.332a4.036 4.036 0 0 0 5.688 0l15.132-15.157c-3.199-6.609-2.625-14.593 1.735-20.73m0 0"
+    />
+  </svg>
+);
 import React from "react";
 import {
   LineChart,
@@ -75,14 +94,15 @@ function formatModelName(model: string): string {
     .join(" ");
 }
 
-function formatTimeToReset(minutes: number): string {
-  const hours = Math.floor(minutes / 60);
-  const mins = minutes % 60;
-  if (hours > 0) {
-    return `${hours}h ${mins}m`;
-  }
-  return `${mins}m`;
-}
+// Hidden temporarily - telemetry doesn't support time to reset
+// function formatTimeToReset(minutes: number): string {
+//   const hours = Math.floor(minutes / 60);
+//   const mins = minutes % 60;
+//   if (hours > 0) {
+//     return `${hours}h ${mins}m`;
+//   }
+//   return `${mins}m`;
+// }
 
 export function OverallUsageView({ data, loading, error, refetch }: OverallUsageViewProps) {
 
@@ -146,7 +166,11 @@ export function OverallUsageView({ data, loading, error, refetch }: OverallUsage
   })) || [];
 
   // Calculate time progress percentage (out of 5 hours = 300 minutes)
-  const timeProgressPercent = ((300 - overallStats.timeToResetMinutes) / 300) * 100;
+  // Hidden temporarily - telemetry doesn't support time to reset
+  // const timeProgressPercent = ((300 - overallStats.timeToResetMinutes) / 300) * 100;
+
+  // Check if data source is telemetry
+  const isTelemetrySource = data?.dataSource?.sourceType === "telemetry";
 
   const UsageCard = ({
     icon: Icon,
@@ -155,6 +179,7 @@ export function OverallUsageView({ data, loading, error, refetch }: OverallUsage
     formatter,
     subValue,
     iconColor,
+    showTelemetryBadge = false,
   }: {
     icon: any;
     label: string;
@@ -162,11 +187,17 @@ export function OverallUsageView({ data, loading, error, refetch }: OverallUsage
     formatter: (value: number) => string;
     subValue?: string;
     iconColor: string;
+    showTelemetryBadge?: boolean;
   }) => (
     <div className="border border-gray-700 rounded-lg p-6 bg-gray-900/50">
       <div className="flex items-center gap-3 mb-2">
         <Icon className={`w-5 h-5 ${iconColor}`} />
         <span className="text-gray-400">{label}</span>
+        {showTelemetryBadge && isTelemetrySource && (
+          <span className="ml-auto" title="Data from telemetry">
+            <TelemetryBadge />
+          </span>
+        )}
       </div>
       <p className="text-3xl text-gray-100">
         <AnimatedNumber value={numericValue} formatter={formatter} />
@@ -213,15 +244,16 @@ export function OverallUsageView({ data, loading, error, refetch }: OverallUsage
         />
       </div>
 
-      {/* Today's Stats Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Today's Stats & Burn Rate Row - 4 columns */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <UsageCard
           icon={Calendar}
           label="Today's Cost"
           numericValue={overallStats.todayStats?.costUsd || 0}
           formatter={formatCost}
-          subValue={`${overallStats.todayStats?.messageCount || 0} messages today`}
+          subValue={`${overallStats.todayStats?.messageCount || 0} msgs today`}
           iconColor="text-cyan-400"
+          showTelemetryBadge
         />
         <UsageCard
           icon={Calendar}
@@ -230,12 +262,30 @@ export function OverallUsageView({ data, loading, error, refetch }: OverallUsage
           formatter={formatTokens}
           subValue={`In: ${formatTokens(overallStats.todayStats?.inputTokens || 0)} / Out: ${formatTokens(overallStats.todayStats?.outputTokens || 0)}`}
           iconColor="text-cyan-400"
+          showTelemetryBadge
+        />
+        <UsageCard
+          icon={Flame}
+          label="Burn Rate"
+          numericValue={overallStats.burnRate?.tokensPerMinute || 0}
+          formatter={(v) => v > 0 ? `${formatTokens(v)}/min` : "--"}
+          subValue={overallStats.burnRate ? "Current consumption" : "No active session"}
+          iconColor="text-red-400"
+          showTelemetryBadge
+        />
+        <UsageCard
+          icon={DollarSign}
+          label="Cost Rate"
+          numericValue={overallStats.burnRate?.costPerHour || 0}
+          formatter={(v) => v > 0 ? (v < 0.01 ? "< $0.01/hr" : `$${v.toFixed(2)}/hr`) : "--"}
+          subValue={overallStats.burnRate ? "Projected hourly" : "No active session"}
+          iconColor="text-emerald-400"
+          showTelemetryBadge
         />
       </div>
 
-      {/* Session Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Time to Reset */}
+      {/* Time to Reset - Hidden temporarily, telemetry doesn't support this */}
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="border border-gray-700 rounded-lg p-6 bg-gray-900/50">
           <div className="flex items-center gap-3 mb-4">
             <Clock className="w-5 h-5 text-orange-400" />
@@ -252,57 +302,7 @@ export function OverallUsageView({ data, loading, error, refetch }: OverallUsage
           </div>
           <p className="text-sm text-gray-500 mt-2">5-hour session window</p>
         </div>
-
-        {/* Burn Rate */}
-        <div className="border border-gray-700 rounded-lg p-6 bg-gray-900/50">
-          <div className="flex items-center gap-3 mb-4">
-            <Flame className="w-5 h-5 text-red-400" />
-            <span className="text-gray-400">Burn Rate</span>
-          </div>
-          <p className="text-3xl text-gray-100">
-            {overallStats.burnRate ? (
-              <AnimatedNumber
-                value={overallStats.burnRate.tokensPerMinute}
-                formatter={(v) => `${formatTokens(v)}/min`}
-              />
-            ) : (
-              <span className="text-gray-500">--</span>
-            )}
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
-            {overallStats.burnRate
-              ? `Current session consumption rate`
-              : "No active session"}
-          </p>
-        </div>
-
-        {/* Cost Rate */}
-        <div className="border border-gray-700 rounded-lg p-6 bg-gray-900/50">
-          <div className="flex items-center gap-3 mb-4">
-            <DollarSign className="w-5 h-5 text-emerald-400" />
-            <span className="text-gray-400">Cost Rate</span>
-          </div>
-          <p className="text-3xl text-gray-100">
-            {overallStats.burnRate ? (
-              overallStats.burnRate.costPerHour < 0.01 ? (
-                <span>{"< $0.01/hr"}</span>
-              ) : (
-                <AnimatedNumber
-                  value={overallStats.burnRate.costPerHour}
-                  formatter={(v) => `$${v.toFixed(2)}/hr`}
-                />
-              )
-            ) : (
-              <span className="text-gray-500">--</span>
-            )}
-          </p>
-          <p className="text-sm text-gray-500 mt-1">
-            {overallStats.burnRate
-              ? "Projected hourly cost"
-              : "No active session"}
-          </p>
-        </div>
-      </div>
+      </div> */}
 
       {/* Model Distribution */}
       {pieData.length > 0 && (

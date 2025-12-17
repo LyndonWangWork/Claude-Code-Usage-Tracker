@@ -491,6 +491,7 @@ pub fn get_usage_data(
         projects,
         daily_usage,
         overall_stats,
+        data_source: None, // Will be set by command layer
     })
 }
 
