@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Claude Code Usage Tracker",
-  "version": "0.1.4beta",
+  "version": "0.1.4",
   "identifier": "com.claude-code-usage-tracker.app",
   "build": {
     "frontendDist": "../web/dist",
