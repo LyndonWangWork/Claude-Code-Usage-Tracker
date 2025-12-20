@@ -1,6 +1,6 @@
 [package]
 name = "claude-code-usage-tracker"
-version = "0.1.4"
+version = "0.1.5"
 description = "A desktop application for tracking Claude Code usage statistics"
 authors = ["you"]
 license = ""
