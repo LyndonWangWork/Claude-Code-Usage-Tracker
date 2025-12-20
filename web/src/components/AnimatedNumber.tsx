@@ -1,15 +1,13 @@
 import { useState, useEffect, useRef } from "react";
 import React from "react";
 
-interface AnimatedNumberProps {
+interface AnimatedNumberProps extends React.HTMLAttributes<HTMLSpanElement> {
   /** The target value to animate to */
   value: number;
   /** Optional formatter function to format the displayed value */
   formatter?: (value: number) => string;
   /** Animation duration in milliseconds (default: 500) */
   duration?: number;
-  /** Additional CSS classes */
-  className?: string;
 }
 
 /**
@@ -21,6 +19,7 @@ export function AnimatedNumber({
   formatter,
   duration = 500,
   className,
+  ...rest
 }: AnimatedNumberProps) {
   const [displayValue, setDisplayValue] = useState(value);
   const prevValueRef = useRef(value);
@@ -81,5 +80,5 @@ export function AnimatedNumber({
     ? formatter(displayValue)
     : displayValue.toLocaleString();
 
-  return <span className={className}>{formatted}</span>;
+  return <span className={className} {...rest}>{formatted}</span>;
 }
